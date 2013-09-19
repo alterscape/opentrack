@@ -454,14 +454,11 @@ endif()
 
     if(WIN32)
         target_link_libraries(opentrack-tracker-ht
-                      "${CMAKE_SOURCE_DIR}/dinput/dinput8.lib"
                       "${CMAKE_SOURCE_DIR}/dinput/dxguid.lib"
                       "${CMAKE_SOURCE_DIR}/dinput/strmiids.lib"
                       uuid)
-		
     endif()
 
-	
     if(OpenCV_FOUND)
         include_directories(${OpenCV_INCLUDE_DIRS})
         include_directories(${OpenCV_DIR}/include)
@@ -475,14 +472,13 @@ endif()
         SET_TARGET_PROPERTIES(opentrack-tracker-pt
                 PROPERTIES LINK_FLAGS "-Wl,--version-script=${CMAKE_SOURCE_DIR}/facetracknoir/posix-version-script.txt")
         endif()
-		
-		if (WIN32)
-		target_link_libraries(opentrack-tracker-pt
-					  "${CMAKE_SOURCE_DIR}/dinput/dinput8.lib"
-					  "${CMAKE_SOURCE_DIR}/dinput/dxguid.lib"
-					  "${CMAKE_SOURCE_DIR}/dinput/strmiids.lib"
-					  uuid)
-		endif()
+
+        if(WIN32)
+            target_link_libraries(opentrack-tracker-pt
+                          "${CMAKE_SOURCE_DIR}/dinput/dxguid.lib"
+                          "${CMAKE_SOURCE_DIR}/dinput/strmiids.lib"
+                          uuid)
+        endif()
     endif()
 
     add_library(opentrack-tracker-udp SHARED ${opentrack-tracker-udp-c} ${opentrack-tracker-udp-moc} ${opentrack-tracker-udp-uih} ${opentrack-tracker-udp-rcc})
@@ -572,12 +568,10 @@ if(SDK_SM_FACEAPI_PATH)
     if(MSVC80 OR MINGW)
         add_executable(opentrack-faceapi-wrapper ${opentrack-faceapi-wrapper-c})
         target_link_libraries(opentrack-faceapi-wrapper "${SDK_SM_FACEAPI_PATH}/bin/smft32.lib")
-        if(CMAKE_COMPILER_IS_GNUCXX)
-                #target_link_libraries(opentrack-faceapi-wrapper msvcr80)
-                SET_TARGET_PROPERTIES(opentrack-faceapi-wrapper PROPERTIES LINK_FLAGS "-mdll")
-        endif()
     endif()
 endif() 
+
+install(FILES "${CMAKE_SOURCE_DIR}/README.md" DESTINATION .)
 
 if(NOT SDK_FACEAPI_ONLY)
     if(SDK_XPLANE)
@@ -673,22 +667,17 @@ if(NOT SDK_FACEAPI_ONLY)
                 )
                 install(FILES ${opentrack-opencv-files} DESTINATION .)
         endif()
-        get_filename_component(opentrack-qt-bin "${QT_QMAKE_EXECUTABLE}" PATH)
         if(WIN32 AND NOT CMAKE_COMPILER_IS_GNUCC)
-        GET_FILENAME_COMPONENT(qt-dirname "${QT_QTCORE_LIBRARY_RELEASE}" PATH)
-        SET(qt-dirname "${qt-dirname}/../bin/")
-        if(NOT EXISTS "${qt-dirname}/../bin/")
             GET_FILENAME_COMPONENT(qt-dirname "${QT_QTCORE_LIBRARY_RELEASE}" PATH)
             SET(qt-dirname "${qt-dirname}/../bin/")
-        endif()
-        install(FILES
-            "${qt-dirname}/QtCore4.dll"
-            "${qt-dirname}/QtGui4.dll"
-            "${qt-dirname}/QtNetwork4.dll"
-            "${qt-dirname}/QtSvg4.dll"
-            "${qt-dirname}/QtXml4.dll"
-            DESTINATION .
-        )
+            install(FILES
+                "${qt-dirname}/QtCore4.dll"
+                "${qt-dirname}/QtGui4.dll"
+                "${qt-dirname}/QtNetwork4.dll"
+                "${qt-dirname}/QtSvg4.dll"
+                "${qt-dirname}/QtXml4.dll"
+                DESTINATION .
+            )
         endif()
         install(TARGETS
                 opentrack-proto-freetrack
@@ -716,11 +705,11 @@ if(SDK_SM_FACEAPI_PATH AND NOT SDK_FACEAPI_ONLY)
 endif()
 
 if(MSVC)
-    file(GLOB pdbs "${CMAKE_BINARY_DIR}/*.pdb")
+    file(GLOB pdbs "${CMAKE_BINARY_DIR}/*.pdb" "${CMAKE_BINARY_DIR}/release/*.pdb")
     install(FILES ${pdbs} DESTINATION .)
 endif()
 
-if(WIN32 AND SDK_SM_FACEAPI_PATH AND MSVC80)
+if(SDK_SM_FACEAPI_PATH AND (MSVC80 OR MINGW))
     install(TARGETS opentrack-faceapi-wrapper
         RUNTIME DESTINATION faceapi
         LIBRARY DESTINATION faceapi
